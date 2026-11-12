@@ -1,0 +1,13 @@
+name: LuminaHUD
+version: '${version}'
+main: luminaworld.luminahud.LuminaHUDPlugin
+api-version: '1.21'
+folia-supported: true
+description: '${description}'
+softdepend:
+  - PlaceholderAPI
+
+permissions:
+  luminahud.admin:
+    description: "สิทธิ์การเข้าถึงคำสั่งดูแลระบบ LuminaHUD ทั้งหมด"
+    default: op

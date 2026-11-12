@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuminaHUD Web Studio</title>
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        lumina: {
+                            bg: '#02020A',
+                            card: 'rgba(12, 12, 24, 0.75)',
+                            border: 'rgba(195, 81, 245, 0.18)',
+                            primary: '#C351F5',
+                            primaryHover: '#ae3ce0',
+                            accent: '#58A6FF',
+                            accentCyan: '#38EF7D',
+                            text: '#F0F6FC',
+                            muted: '#8B949E'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        minecraft: ['"Minecraftia"', '"JetBrains Mono"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @font-face {
+            font-family: 'Minecraftia';
+            src: url('https://cdn.jsdelivr.net/gh/IdreesInc/Minecraft-Font@master/Minecraft.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        :root {
+            --lumina-glow: 0 0 25px rgba(195, 81, 245, 0.25);
+        }
+
+        body {
+            background-color: #02020A;
+            color: #F0F6FC;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(10, 10, 22, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(195, 81, 245, 0.18);
+        }
+
+        .glass-panel-elevated {
+            background: rgba(18, 18, 36, 0.82);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(195, 81, 245, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(195, 81, 245, 0.12);
+        }
+
+        .lumina-input {
+            background: rgba(4, 4, 12, 0.85);
+            border: 1px solid rgba(195, 81, 245, 0.25);
+            color: #F0F6FC;
+            transition: all 0.2s ease;
+        }
+        .lumina-input:focus {
+            border-color: #C351F5;
+            box-shadow: 0 0 12px rgba(195, 81, 245, 0.35);
+            outline: none;
+        }
+
+        /* Minecraft Text Shadow simulation */
+        .mc-shadow {
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.85);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #02020A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(195, 81, 245, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(195, 81, 245, 0.6);
+        }
+
+        /* Viewport Canvas Grid Pattern */
+        .viewport-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        }
+
+        /* Selection outline */
+        .layer-selected {
+            outline: 2px dashed #C351F5 !important;
+            outline-offset: 4px;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col bg-lumina-bg select-none">
+
+    <!-- ========================================================================= -->
+    <!-- 1. TOP NAVIGATION / HEADER                                                -->
+    <!-- ========================================================================= -->
+    <header class="h-16 border-b border-lumina-border glass-panel px-6 flex items-center justify-between z-30 flex-shrink-0">
+        <!-- Logo & Branding -->
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-lumina-primary to-lumina-accent flex items-center justify-center shadow-lg shadow-lumina-primary/30">
+                <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
+                        LuminaHUD <span class="text-xs px-2 py-0.5 rounded-full bg-lumina-primary/20 text-lumina-primary font-semibold border border-lumina-primary/30">Web Studio</span>
+                    </h1>
+                </div>
+                <p class="text-xs text-lumina-muted">Minecraft Clean-Room SVG & Dynamic Font Engine</p>
+            </div>
+        </div>
+
+        <!-- HUD Selector & Preset -->
+        <div class="flex items-center space-x-3">
+            <label class="text-xs text-lumina-muted font-medium">HUD ID:</label>
+            <div class="relative">
+                <input id="hudIdInput" type="text" value="default_hud" class="lumina-input text-xs px-3 py-1.5 rounded-lg w-40 font-mono font-semibold" placeholder="hud_id">
+            </div>
+            <select id="hudListSelect" onchange="onSelectExistingHud(this.value)" class="lumina-input text-xs px-3 py-1.5 rounded-lg cursor-pointer">
+                <option value="">เลือก HUD ในเซิร์ฟเวอร์...</option>
+            </select>
+            <button onclick="createNewHud()" class="text-xs px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition" title="สร้าง HUD ใหม่">
+                + New
+            </button>
+        </div>
+
+        <!-- System Status & Actions -->
+        <div class="flex items-center space-x-3">
+            <!-- Server Connection Indicator -->
+            <div id="connectionBadge" class="flex items-center space-x-1.5 text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="connectionText">Online (Port ...)</span>
+            </div>
+
+            <!-- Export YAML Button -->
+            <button onclick="openYamlModal()" class="text-xs font-semibold px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-200 border border-white/10 flex items-center space-x-1.5 transition">
+                <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                <span>YAML</span>
+            </button>
+
+            <!-- Save & Build Button (Primary) -->
+            <button id="saveBuildBtn" onclick="saveAndBuildHud()" class="text-xs font-bold px-4 py-2 rounded-xl bg-gradient-to-r from-lumina-primary to-lumina-accent hover:opacity-90 text-white shadow-lg shadow-lumina-primary/30 flex items-center space-x-2 transition transform active:scale-95">
+                <svg class="w-4 h-4 animate-spin hidden" id="saveSpinner" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <svg class="w-4 h-4" id="saveIcon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                </svg>
+                <span>Save & Build HUD</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- 2. MAIN 3-PANEL WORKSPACE                                                 -->
+    <!-- ========================================================================= -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- --------------------------------------------------------------------- -->
+        <!-- LEFT PANEL: HUD Settings, Figma Importer & Layers Manager            -->
+        <!-- --------------------------------------------------------------------- -->
+        <aside class="w-80 border-r border-lumina-border glass-panel flex flex-col flex-shrink-0 z-20">
+            <div class="flex-1 overflow-y-auto p-4 space-y-5">
+                
+                <!-- HUD General Settings -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-lumina-primary">HUD Configuration</span>
+                        <span class="text-[10px] text-lumina-muted">General</span>
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] text-lumina-muted block mb-1">ชื่อ HUD (Name)</label>
+                        <input id="hudNameInput" type="text" value="Default RPG Style HUD" class="lumina-input text-xs w-full px-3 py-1.5 rounded-lg" placeholder="Display Name">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[11px] text-lumina-muted block mb-1">Display Type</label>
+                            <select id="hudDisplayType" class="lumina-input text-xs w-full px-2.5 py-1.5 rounded-lg">
+                                <option value="ACTIONBAR" selected>ACTIONBAR</option>
+                                <option value="BOSSBAR">BOSSBAR</option>
+                                <option value="TITLE">TITLE</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-lumina-muted block mb-1">Priority</label>
+                            <input id="hudPriority" type="number" value="10" class="lumina-input text-xs w-full px-2.5 py-1.5 rounded-lg">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] text-lumina-muted block mb-1">Anchor Position (ตำแหน่งยึด)</label>
+                        <select id="hudAnchor" onchange="onAnchorChange(this.value)" class="lumina-input text-xs w-full px-2.5 py-1.5 rounded-lg">
+                            <option value="BOTTOM_CENTER" selected>Bottom-Center (ActionBar)</option>
+                            <option value="BOTTOM_LEFT">Bottom-Left (HP/Armor)</option>
+                            <option value="BOTTOM_RIGHT">Bottom-Right (Food/Oxygen)</option>
+                            <option value="TOP_CENTER">Top-Center (BossBar/Events)</option>
+                            <option value="TOP_LEFT">Top-Left (Player Info/Status)</option>
+                            <option value="TOP_RIGHT">Top-Right (Minimap/Quest)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-lumina-border">
+
+                <!-- Figma SVG Importer Section -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-lumina-accent">Figma SVG Importer</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-lumina-accent/10 text-lumina-accent border border-lumina-accent/20">Vector</span>
+                    </div>
+
+                    <p class="text-[11px] text-lumina-muted leading-relaxed">
+                        วางโค้ด SVG ที่ Copy จาก Figma (Right Click &gt; Copy as SVG) หรืออัปโหลดไฟล์
+                    </p>
+
+                    <!-- File Upload Dropzone -->
+                    <div class="relative border-2 border-dashed border-lumina-border rounded-xl p-3 text-center hover:border-lumina-primary/50 transition cursor-pointer bg-white/[0.02]">
+                        <input type="file" id="svgFileInput" accept=".svg" onchange="handleSvgFileUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <div class="space-y-1">
+                            <svg class="w-5 h-5 mx-auto text-lumina-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <div class="text-[11px] text-gray-300 font-medium">คลิกเพื่ออัปโหลดไฟล์ .svg</div>
+                        </div>
+                    </div>
+
+                    <!-- Raw SVG Textarea -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[11px] text-lumina-muted">หรือวางโค้ด &lt;svg&gt;...</label>
+                            <button onclick="clearSvg()" class="text-[10px] text-rose-400 hover:underline">ล้าง SVG</button>
+                        </div>
+                        <textarea id="svgCodeInput" oninput="onSvgCodeInput()" rows="4" class="lumina-input text-[11px] font-mono w-full p-2.5 rounded-lg resize-none" placeholder='<svg width="180" height="24" viewBox="0 0 180 24" ...>&#10;  <rect ... />&#10;</svg>'></textarea>
+                    </div>
+
+                    <!-- SVG Graphic Transform Controls -->
+                    <div class="space-y-2 bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] text-lumina-muted">Scale (ขนาด)</label>
+                            <span id="svgScaleVal" class="text-[11px] font-mono text-lumina-accent font-semibold">1.0x</span>
+                        </div>
+                        <input id="svgScaleSlider" type="range" min="0.2" max="3.0" step="0.1" value="1.0" oninput="onSvgScaleChange(this.value)" class="w-full accent-lumina-primary">
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <div>
+                                <label class="text-[10px] text-lumina-muted">Offset X</label>
+                                <input id="svgOffsetX" type="number" value="0" oninput="onSvgOffsetChange()" class="lumina-input text-xs w-full px-2 py-1 rounded">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-lumina-muted">Offset Y</label>
+                                <input id="svgOffsetY" type="number" value="0" oninput="onSvgOffsetChange()" class="lumina-input text-xs w-full px-2 py-1 rounded">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-lumina-border">
+
+                <!-- Layer List Manager -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-lumina-primary">Layers Manager</span>
+                        <button onclick="addTextLayer()" class="text-[11px] font-semibold px-2 py-1 rounded-lg bg-lumina-primary/20 text-lumina-primary border border-lumina-primary/30 hover:bg-lumina-primary/30 transition flex items-center gap-1">
+                            <span>+ Add Text</span>
+                        </button>
+                    </div>
+
+                    <div id="layersListContainer" class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                        <!-- รายการเลเยอร์จะถูกเรนเดอร์โดย JavaScript -->
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- --------------------------------------------------------------------- -->
+        <!-- CENTER PANEL: Minecraft Viewport Simulator (16:9 Canvas)             -->
+        <!-- --------------------------------------------------------------------- -->
+        <main class="flex-1 flex flex-col bg-black/60 relative overflow-hidden">
+            <!-- Viewport Toolbar -->
+            <div class="h-10 border-b border-lumina-border/60 bg-lumina-bg/80 px-4 flex items-center justify-between z-10 flex-shrink-0 text-xs text-lumina-muted">
+                <div class="flex items-center space-x-4">
+                    <span class="font-semibold text-gray-300 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-lumina-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        Minecraft Viewport Simulator (1920 &times; 1080)
+                    </span>
+                    <span class="text-white/20">|</span>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                        <input id="toggleGridCheckbox" type="checkbox" checked onchange="toggleGrid(this.checked)" class="accent-lumina-primary">
+                        <span>Grid & Safe Zones</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                        <input id="toggleHotbarCheckbox" type="checkbox" checked onchange="toggleHotbar(this.checked)" class="accent-lumina-primary">
+                        <span>Hotbar Simulation</span>
+                    </label>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <span id="cursorCoords" class="font-mono text-[11px] text-lumina-accent">X: 0, Y: 0</span>
+                    <span class="text-white/20">|</span>
+                    <button onclick="resetZoom()" class="hover:text-white transition">Fit Screen</button>
+                </div>
+            </div>
+
+            <!-- Viewport Canvas Container -->
+            <div id="viewportContainer" class="flex-1 relative flex items-center justify-center p-6 overflow-hidden viewport-grid">
+                
+                <!-- 16:9 Screen Frame (1920x1080 Aspect Ratio) -->
+                <div id="minecraftScreen" class="relative w-full max-w-5xl aspect-video rounded-xl shadow-2xl border border-white/10 overflow-hidden bg-cover bg-center transition-all" style="background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop');">
+                    
+                    <!-- Safe Zone Guidelines Overlay -->
+                    <div id="safeZoneOverlay" class="absolute inset-0 pointer-events-none z-10">
+                        <!-- Center Crosshair -->
+                        <div class="absolute inset-0 flex items-center justify-center opacity-30">
+                            <div class="w-4 h-0.5 bg-white"></div>
+                            <div class="h-4 w-0.5 bg-white -ml-2.25"></div>
+                        </div>
+
+                        <!-- 6 Safe Zone Anchors -->
+                        <div class="absolute top-4 left-4 border border-dashed border-cyan-400/30 rounded px-2 py-1 text-[9px] text-cyan-300 font-mono">TOP_LEFT</div>
+                        <div class="absolute top-4 left-1/2 -translate-x-1/2 border border-dashed border-cyan-400/30 rounded px-2 py-1 text-[9px] text-cyan-300 font-mono">TOP_CENTER (BossBar)</div>
+                        <div class="absolute top-4 right-4 border border-dashed border-cyan-400/30 rounded px-2 py-1 text-[9px] text-cyan-300 font-mono">TOP_RIGHT</div>
+                        <div class="absolute bottom-16 left-4 border border-dashed border-cyan-400/30 rounded px-2 py-1 text-[9px] text-cyan-300 font-mono">BOTTOM_LEFT</div>
+                        <div class="absolute bottom-20 left-1/2 -translate-x-1/2 border border-dashed border-purple-400/50 bg-purple-500/5 rounded px-2.5 py-1 text-[10px] text-purple-300 font-mono font-bold">BOTTOM_CENTER (ActionBar Zone)</div>
+                        <div class="absolute bottom-16 right-4 border border-dashed border-cyan-400/30 rounded px-2 py-1 text-[9px] text-cyan-300 font-mono">BOTTOM_RIGHT</div>
+                    </div>
+
+                    <!-- Simulated Minecraft Hotbar Overlay -->
+                    <div id="hotbarSimulation" class="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none z-10 flex flex-col items-center">
+                        <!-- Hearts / Food Level -->
+                        <div class="flex justify-between w-72 mb-1 px-1 text-[10px] font-minecraft text-white drop-shadow">
+                            <div class="flex space-x-0.5">
+                                <span class="text-red-500">❤❤❤❤❤❤❤❤❤❤</span>
+                            </div>
+                            <div class="flex space-x-0.5">
+                                <span class="text-amber-500">🍗🍗🍗🍗🍗🍗🍗🍗🍗🍗</span>
+                            </div>
+                        </div>
+                        <!-- Hotbar 9 Slots -->
+                        <div class="w-80 h-10 bg-black/70 border-2 border-gray-500 rounded flex items-center justify-around px-1 backdrop-blur-sm">
+                            <div class="w-7 h-7 bg-white/10 border border-white/30 rounded"></div>
+                            <div class="w-7 h-7 bg-white/5 border border-white/10 rounded"></div>
+                            <div class="w-7 h-7 bg-white/5 border border-white/10 rounded"></div>
+                            <div class="w-7 h-7 bg-white/5 border border-white/10 rounded"></div>
+                            <div class="w-7 h-7 bg-white/5 border border-white/10 rounded"></div>
+                            <div class="w-7 h-7 bg-white/5 border border-white/10 rounded"></div>
+                            <div class="w-7 h-7 bg-white/5 border border-white/10 rounded"></div>
+                            <div class="w-7 h-7 bg-white/5 border border-white/10 rounded"></div>
+                            <div class="w-7 h-7 bg-white/5 border border-white/10 rounded"></div>
+                        </div>
+                    </div>
+
+                    <!-- ========================================================= -->
+                    <!-- HUD Interactive Canvas Content                            -->
+                    <!-- ========================================================= -->
+                    <div id="hudRootAnchor" class="absolute left-1/2 bottom-24 -translate-x-1/2 transition-transform duration-75 pointer-events-auto">
+                        
+                        <!-- Base Graphic / SVG Layer Container -->
+                        <div id="svgContainer" class="relative cursor-move transition-transform" onmousedown="startDragElement(event, 'svg')" title="คลิกลากกราฟิก SVG">
+                            <!-- SVG Code injected here dynamically -->
+                        </div>
+
+                        <!-- Dynamic Text Layers injected here dynamically -->
+                        <div id="textLayersOverlay" class="absolute inset-0 pointer-events-none">
+                            <!-- Text Layers -->
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+
+        <!-- --------------------------------------------------------------------- -->
+        <!-- RIGHT PANEL: Inspector & Layer Properties                            -->
+        <!-- --------------------------------------------------------------------- -->
+        <aside class="w-84 border-l border-lumina-border glass-panel flex flex-col flex-shrink-0 z-20">
+            <div class="p-4 border-b border-lumina-border flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-lumina-primary">Layer Inspector</span>
+                <span id="selectedLayerBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-mono">None Selected</span>
+            </div>
+
+            <div id="inspectorContent" class="flex-1 overflow-y-auto p-4 space-y-5">
+                
+                <!-- Prompt when nothing selected -->
+                <div id="noSelectionPrompt" class="text-center py-12 text-lumina-muted space-y-2">
+                    <svg class="w-8 h-8 mx-auto text-lumina-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+                    </svg>
+                    <p class="text-xs">คลิกเลือกเลเยอร์บน Canvas หรือใน Layers Manager เพื่อปรับแต่ง</p>
+                </div>
+
+                <!-- Text Layer Inspector (Visible when a text layer is selected) -->
+                <div id="textInspector" class="hidden space-y-4">
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[11px] text-lumina-muted">ข้อความ / Placeholder</label>
+                            <span class="text-[10px] text-lumina-accent">PlaceholderAPI Ready</span>
+                        </div>
+                        <input id="propTextContent" type="text" oninput="updateSelectedTextProp('text', this.value)" class="lumina-input text-xs w-full px-3 py-1.5 rounded-lg font-mono">
+                        
+                        <!-- Quick Placeholder Chips -->
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            <button onclick="insertPlaceholder('%player_name%')" class="text-[10px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 font-mono">%player_name%</button>
+                            <button onclick="insertPlaceholder('%player_health%')" class="text-[10px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 font-mono">%player_health%</button>
+                            <button onclick="insertPlaceholder('%vault_eco_balance%')" class="text-[10px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 font-mono">%vault_eco_balance%</button>
+                            <button onclick="insertPlaceholder('%player_ping%')" class="text-[10px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 font-mono">%player_ping%</button>
+                        </div>
+                    </div>
+
+                    <!-- Alignment -->
+                    <div>
+                        <label class="text-[11px] text-lumina-muted block mb-1">การจัดแนวข้อความ (Alignment)</label>
+                        <div class="grid grid-cols-3 gap-1 bg-white/5 p-1 rounded-lg">
+                            <button id="btnAlignLeft" onclick="updateSelectedTextProp('align', 'LEFT')" class="text-xs py-1 rounded text-gray-300 hover:bg-white/10">Left</button>
+                            <button id="btnAlignCenter" onclick="updateSelectedTextProp('align', 'CENTER')" class="text-xs py-1 rounded text-gray-300 hover:bg-white/10">Center</button>
+                            <button id="btnAlignRight" onclick="updateSelectedTextProp('align', 'RIGHT')" class="text-xs py-1 rounded text-gray-300 hover:bg-white/10">Right</button>
+                        </div>
+                    </div>
+
+                    <!-- Scale & Color -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[11px] text-lumina-muted block mb-1">Scale (ขนาด)</label>
+                            <input id="propTextScale" type="number" step="0.1" min="0.2" max="5.0" oninput="updateSelectedTextProp('scale', parseFloat(this.value) || 1.0)" class="lumina-input text-xs w-full px-2.5 py-1.5 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-lumina-muted block mb-1">สีข้อความ (Hex)</label>
+                            <div class="flex items-center space-x-1.5">
+                                <input id="propTextColorPicker" type="color" oninput="updateSelectedTextProp('color', this.value); document.getElementById('propTextColor').value = this.value;" class="w-7 h-7 rounded border-0 bg-transparent cursor-pointer">
+                                <input id="propTextColor" type="text" oninput="updateSelectedTextProp('color', this.value)" class="lumina-input text-xs w-full px-2 py-1.5 rounded-lg font-mono">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MiniMessage Gradient Generator -->
+                    <div class="p-3 bg-white/[0.02] rounded-xl border border-white/5 space-y-2">
+                        <label class="text-[11px] text-lumina-primary font-semibold flex items-center justify-between">
+                            <span>MiniMessage Gradient</span>
+                            <button onclick="applyGradientToSelected()" class="text-[10px] text-lumina-accent hover:underline">Apply</button>
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[9px] text-lumina-muted">Color 1</label>
+                                <input id="gradColor1" type="color" value="#C351F5" class="w-full h-6 rounded border-0 bg-transparent cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="text-[9px] text-lumina-muted">Color 2</label>
+                                <input id="gradColor2" type="color" value="#58A6FF" class="w-full h-6 rounded border-0 bg-transparent cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Text Shadow Toggle -->
+                    <div class="flex items-center justify-between py-1">
+                        <div>
+                            <div class="text-xs text-gray-200 font-medium">เงาตัวอักษร (Text Shadow)</div>
+                            <div class="text-[10px] text-lumina-muted">Minecraft drop-shadow style</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input id="propTextShadow" type="checkbox" onchange="updateSelectedTextProp('shadow', this.checked)" class="sr-only peer">
+                            <div class="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-lumina-primary"></div>
+                        </label>
+                    </div>
+
+                    <!-- Coordinates X, Y -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[11px] text-lumina-muted block mb-1">พิกัด X (Offset)</label>
+                            <input id="propTextX" type="number" oninput="updateSelectedTextProp('x', parseInt(this.value) || 0)" class="lumina-input text-xs w-full px-2.5 py-1.5 rounded-lg font-mono">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-lumina-muted block mb-1">พิกัด Y (Offset)</label>
+                            <input id="propTextY" type="number" oninput="updateSelectedTextProp('y', parseInt(this.value) || 0)" class="lumina-input text-xs w-full px-2.5 py-1.5 rounded-lg font-mono">
+                        </div>
+                    </div>
+
+                    <!-- Visibility Condition -->
+                    <div>
+                        <label class="text-[11px] text-lumina-muted block mb-1">เงื่อนไขการแสดงผล (Visibility Condition)</label>
+                        <input id="propTextCondition" type="text" oninput="updateSelectedTextProp('condition', this.value)" placeholder="%player_health% < 10" class="lumina-input text-xs w-full px-3 py-1.5 rounded-lg font-mono text-emerald-400">
+                        <span class="text-[10px] text-lumina-muted mt-1 block">ปล่อยว่างเพื่อแสดงตลอดเวลา</span>
+                    </div>
+
+                    <div class="pt-2 flex justify-between">
+                        <button onclick="duplicateSelectedText()" class="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10">คัดลอกเลเยอร์</button>
+                        <button onclick="deleteSelectedText()" class="text-xs px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30">ลบเลเยอร์</button>
+                    </div>
+
+                </div>
+
+                <!-- Simulation Preview Values -->
+                <div class="mt-8 pt-4 border-t border-lumina-border space-y-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-lumina-accent">Simulator Test Values</span>
+                    <p class="text-[10px] text-lumina-muted">กำหนดค่าทดสอบสำหรับจำลอง Placeholder บนหน้าจอ</p>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="text-[10px] text-lumina-muted">%player_name%</label>
+                            <input id="simPlayerName" type="text" value="Steve" oninput="renderHudViewport()" class="lumina-input text-xs w-full px-2 py-1 rounded">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-lumina-muted">%player_health%</label>
+                            <input id="simPlayerHealth" type="number" value="20" oninput="renderHudViewport()" class="lumina-input text-xs w-full px-2 py-1 rounded">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-lumina-muted">%vault_eco_balance%</label>
+                            <input id="simEcoBalance" type="text" value="1,250.00" oninput="renderHudViewport()" class="lumina-input text-xs w-full px-2 py-1 rounded">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 3. TOAST NOTIFICATIONS & MODALS                                          -->
+    <!-- ========================================================================= -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- YAML Export Modal -->
+    <div id="yamlModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="glass-panel-elevated max-w-2xl w-full rounded-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-lumina-border pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <span class="text-lumina-primary">YAML Configuration</span> Preview
+                </h3>
+                <button onclick="closeYamlModal()" class="text-lumina-muted hover:text-white">&times;</button>
+            </div>
+            <textarea id="yamlOutput" rows="15" readonly class="lumina-input w-full p-3 font-mono text-xs text-emerald-400 rounded-xl resize-none"></textarea>
+            <div class="flex justify-end space-x-3">
+                <button onclick="copyYamlToClipboard()" class="text-xs font-semibold px-4 py-2 rounded-xl bg-lumina-primary hover:bg-lumina-primaryHover text-white">คัดลอก YAML</button>
+                <button onclick="closeYamlModal()" class="text-xs px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 4. CORE JAVASCRIPT ENGINE & LOGIC                                         -->
+    <!-- ========================================================================= -->
+    <script>
+        // System State
+        const state = {
+            token: '',
+            currentHud: {
+                id: 'default_hud',
+                name: 'Default RPG Style HUD',
+                enabled: true,
+                displayType: 'ACTIONBAR',
+                priority: 10,
+                anchor: 'BOTTOM_CENTER',
+                rawSvg: '',
+                svgScale: 1.0,
+                offsetX: 0,
+                offsetY: 0,
+                ascent: 8,
+                height: 16,
+                textLayers: []
+            },
+            selectedLayerId: null, // 'svg' or text layer id
+            isDragging: false,
+            dragTarget: null,
+            dragStartX: 0,
+            dragStartY: 0,
+            initialElemX: 0,
+            initialElemY: 0
+        };
+
+        // Initialize Studio
+        window.addEventListener('DOMContentLoaded', () => {
+            initAuthToken();
+            checkSystemStatus();
+            loadExistingHuds();
+            loadInitialHud();
+            setupDragListeners();
+        });
+
+        // 1. Auth & Connection Handling
+        function initAuthToken() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryToken = urlParams.get('token');
+            if (queryToken) {
+                state.token = queryToken;
+                sessionStorage.setItem('lumina_auth_token', queryToken);
+            } else {
+                state.token = sessionStorage.getItem('lumina_auth_token') || '';
+            }
+        }
+
+        async function checkSystemStatus() {
+            try {
+                const res = await fetch('/api/status', {
+                    headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('connectionBadge').className = 'flex items-center space-x-1.5 text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                    document.getElementById('connectionText').innerText = `Online (Port ${data.webPort})`;
+                } else {
+                    markOffline('Auth Failed');
+                }
+            } catch (err) {
+                markOffline('Offline');
+            }
+        }
+
+        function markOffline(text) {
+            document.getElementById('connectionBadge').className = 'flex items-center space-x-1.5 text-xs px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20';
+            document.getElementById('connectionText').innerText = text;
+        }
+
+        // 2. Load Existing HUDs
+        async function loadExistingHuds() {
+            try {
+                const res = await fetch('/api/huds', {
+                    headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+                if (res.ok) {
+                    const list = await res.json();
+                    const select = document.getElementById('hudListSelect');
+                    select.innerHTML = '<option value="">เลือก HUD ในเซิร์ฟเวอร์...</option>';
+                    list.forEach(hud => {
+                        const opt = document.createElement('option');
+                        opt.value = hud.id;
+                        opt.innerText = `${hud.name} (${hud.id})`;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to load HUD list", e);
+            }
+        }
+
+        async function onSelectExistingHud(hudId) {
+            if (!hudId) return;
+            try {
+                const res = await fetch(`/api/hud/${hudId}`, {
+                    headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    applyHudData(data);
+                    showToast(`โหลด HUD '${hudId}' เรียบร้อย`, 'success');
+                }
+            } catch (err) {
+                showToast(`โหลดไม่สำเร็จ: ${err.message}`, 'error');
+            }
+        }
+
+        function loadInitialHud() {
+            // โหลด Default Template เริ่มต้น
+            const defaultSvg = `<svg width="180" height="24" viewBox="0 0 180 24" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="180" height="24" rx="4" fill="#141414" fill-opacity="0.8" stroke="#C351F5" stroke-width="1.2"/>
+  <rect x="8" y="7" width="80" height="10" rx="2" fill="#E74C3C"/>
+</svg>`;
+
+            state.currentHud.rawSvg = defaultSvg;
+            state.currentHud.textLayers = [
+                {
+                    id: 'text_hp',
+                    text: '<red>HP</red> %player_health%/20',
+                    x: 5,
+                    y: -1,
+                    align: 'LEFT',
+                    scale: 1.0,
+                    color: '#FFFFFF',
+                    shadow: true,
+                    condition: ''
+                },
+                {
+                    id: 'text_player',
+                    text: '%player_name%',
+                    x: 95,
+                    y: -1,
+                    align: 'LEFT',
+                    scale: 0.9,
+                    color: '#58A6FF',
+                    shadow: true,
+                    condition: ''
+                }
+            ];
+
+            syncFormWithState();
+            renderHudViewport();
+            renderLayersList();
+        }
+
+        function createNewHud() {
+            const newId = prompt('กรุณาระบุชื่อ ID ของ HUD ใหม่ (เช่น my_rpg_hud):');
+            if (!newId) return;
+            const safeId = newId.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+            
+            state.currentHud = {
+                id: safeId,
+                name: 'New Custom HUD',
+                enabled: true,
+                displayType: 'ACTIONBAR',
+                priority: 10,
+                anchor: 'BOTTOM_CENTER',
+                rawSvg: '',
+                svgScale: 1.0,
+                offsetX: 0,
+                offsetY: 0,
+                ascent: 8,
+                height: 16,
+                textLayers: []
+            };
+
+            state.selectedLayerId = null;
+            syncFormWithState();
+            renderHudViewport();
+            renderLayersList();
+            showToast(`สร้าง HUD ใหม่ '${safeId}' เรียบร้อย`, 'info');
+        }
+
+        function applyHudData(data) {
+            state.currentHud.id = data.id || 'custom_hud';
+            state.currentHud.name = data.name || data.id;
+            state.currentHud.displayType = data.displayType || 'ACTIONBAR';
+            state.currentHud.priority = data.priority || 10;
+            state.currentHud.anchor = data.anchor || 'BOTTOM_CENTER';
+
+            if (data.layers && data.layers.length > 0) {
+                const baseLayer = data.layers[0];
+                state.currentHud.rawSvg = baseLayer.svgContent || '';
+                state.currentHud.svgScale = baseLayer.scale || 1.0;
+                state.currentHud.offsetX = baseLayer.xOffset || 0;
+                state.currentHud.offsetY = baseLayer.yOffset || 0;
+                state.currentHud.ascent = baseLayer.ascent || 8;
+                state.currentHud.height = baseLayer.height || 16;
+            } else {
+                state.currentHud.rawSvg = '';
+            }
+
+            state.currentHud.textLayers = (data.textLayers || []).map((tl, i) => ({
+                id: tl.id || `text_${i}`,
+                text: tl.text || '',
+                x: tl.x || 0,
+                y: tl.y || 0,
+                align: tl.align || 'LEFT',
+                scale: tl.scale || 1.0,
+                color: tl.color || '#FFFFFF',
+                shadow: tl.shadow !== false,
+                condition: tl.condition || ''
+            }));
+
+            state.selectedLayerId = null;
+            syncFormWithState();
+            renderHudViewport();
+            renderLayersList();
+        }
+
+        function syncFormWithState() {
+            document.getElementById('hudIdInput').value = state.currentHud.id;
+            document.getElementById('hudNameInput').value = state.currentHud.name;
+            document.getElementById('hudDisplayType').value = state.currentHud.displayType;
+            document.getElementById('hudPriority').value = state.currentHud.priority;
+            document.getElementById('hudAnchor').value = state.currentHud.anchor;
+            document.getElementById('svgCodeInput').value = state.currentHud.rawSvg;
+            document.getElementById('svgScaleSlider').value = state.currentHud.svgScale;
+            document.getElementById('svgScaleVal').innerText = `${state.currentHud.svgScale}x`;
+            document.getElementById('svgOffsetX').value = state.currentHud.offsetX;
+            document.getElementById('svgOffsetY').value = state.currentHud.offsetY;
+
+            updateRootAnchorPosition(state.currentHud.anchor);
+        }
+
+        // 3. Figma SVG Importer
+        function handleSvgFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                document.getElementById('svgCodeInput').value = content;
+                onSvgCodeInput();
+                showToast(`นำเข้าไฟล์ ${file.name} เรียบร้อย`, 'success');
+            };
+            reader.readAsText(file);
+        }
+
+        function onSvgCodeInput() {
+            const code = document.getElementById('svgCodeInput').value;
+            state.currentHud.rawSvg = code;
+            renderHudViewport();
+            renderLayersList();
+        }
+
+        function clearSvg() {
+            document.getElementById('svgCodeInput').value = '';
+            state.currentHud.rawSvg = '';
+            renderHudViewport();
+            renderLayersList();
+            showToast('ล้างกราฟิก SVG เรียบร้อย', 'info');
+        }
+
+        function onSvgScaleChange(val) {
+            state.currentHud.svgScale = parseFloat(val);
+            document.getElementById('svgScaleVal').innerText = `${val}x`;
+            renderHudViewport();
+        }
+
+        function onSvgOffsetChange() {
+            state.currentHud.offsetX = parseInt(document.getElementById('svgOffsetX').value) || 0;
+            state.currentHud.offsetY = parseInt(document.getElementById('svgOffsetY').value) || 0;
+            renderHudViewport();
+        }
+
+        function onAnchorChange(val) {
+            state.currentHud.anchor = val;
+            updateRootAnchorPosition(val);
+        }
+
+        function updateRootAnchorPosition(anchor) {
+            const root = document.getElementById('hudRootAnchor');
+            root.className = 'absolute transition-all duration-150 pointer-events-auto';
+
+            switch (anchor) {
+                case 'TOP_LEFT':
+                    root.style.top = '24px';
+                    root.style.left = '24px';
+                    root.style.bottom = 'auto';
+                    root.style.right = 'auto';
+                    root.style.transform = 'none';
+                    break;
+                case 'TOP_CENTER':
+                    root.style.top = '24px';
+                    root.style.left = '50%';
+                    root.style.bottom = 'auto';
+                    root.style.right = 'auto';
+                    root.style.transform = 'translateX(-50%)';
+                    break;
+                case 'TOP_RIGHT':
+                    root.style.top = '24px';
+                    root.style.right = '24px';
+                    root.style.left = 'auto';
+                    root.style.bottom = 'auto';
+                    root.style.transform = 'none';
+                    break;
+                case 'BOTTOM_LEFT':
+                    root.style.bottom = '80px';
+                    root.style.left = '24px';
+                    root.style.top = 'auto';
+                    root.style.right = 'auto';
+                    root.style.transform = 'none';
+                    break;
+                case 'BOTTOM_RIGHT':
+                    root.style.bottom = '80px';
+                    root.style.right = '24px';
+                    root.style.top = 'auto';
+                    root.style.left = 'auto';
+                    root.style.transform = 'none';
+                    break;
+                case 'BOTTOM_CENTER':
+                default:
+                    root.style.bottom = '96px';
+                    root.style.left = '50%';
+                    root.style.top = 'auto';
+                    root.style.right = 'auto';
+                    root.style.transform = 'translateX(-50%)';
+                    break;
+            }
+        }
+
+        // 4. Text & Dynamic Layer Management
+        function addTextLayer() {
+            const newIndex = state.currentHud.textLayers.length + 1;
+            const newLayer = {
+                id: `text_layer_${newIndex}`,
+                text: 'New Text %player_name%',
+                x: 10,
+                y: -5,
+                align: 'LEFT',
+                scale: 1.0,
+                color: '#FFFFFF',
+                shadow: true,
+                condition: ''
+            };
+
+            state.currentHud.textLayers.push(newLayer);
+            selectLayer(newLayer.id);
+            renderHudViewport();
+            renderLayersList();
+            showToast('เพิ่ม Text Layer เรียบร้อย', 'info');
+        }
+
+        function selectLayer(layerId) {
+            state.selectedLayerId = layerId;
+            updateInspector();
+            renderLayersList();
+            renderHudViewport();
+        }
+
+        function updateInspector() {
+            const badge = document.getElementById('selectedLayerBadge');
+            const noSel = document.getElementById('noSelectionPrompt');
+            const textInsp = document.getElementById('textInspector');
+
+            if (!state.selectedLayerId || state.selectedLayerId === 'svg') {
+                if (state.selectedLayerId === 'svg') {
+                    badge.innerText = 'SVG Graphic Layer';
+                    badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-lumina-accent/20 text-lumina-accent font-mono';
+                } else {
+                    badge.innerText = 'None Selected';
+                    badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-gray-300 font-mono';
+                }
+                noSel.classList.remove('hidden');
+                textInsp.classList.add('hidden');
+                return;
+            }
+
+            const layer = state.currentHud.textLayers.find(l => l.id === state.selectedLayerId);
+            if (!layer) return;
+
+            badge.innerText = layer.id;
+            badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-lumina-primary/20 text-lumina-primary font-mono';
+            noSel.classList.add('hidden');
+            textInsp.classList.remove('hidden');
+
+            document.getElementById('propTextContent').value = layer.text;
+            document.getElementById('propTextScale').value = layer.scale;
+            document.getElementById('propTextColor').value = layer.color;
+            document.getElementById('propTextColorPicker').value = layer.color.startsWith('#') ? layer.color : '#FFFFFF';
+            document.getElementById('propTextShadow').checked = layer.shadow;
+            document.getElementById('propTextX').value = layer.x;
+            document.getElementById('propTextY').value = layer.y;
+            document.getElementById('propTextCondition').value = layer.condition || '';
+
+            // Update Alignment Buttons UI
+            ['Left', 'Center', 'Right'].forEach(a => {
+                const btn = document.getElementById(`btnAlign${a}`);
+                if (layer.align.toUpperCase() === a.toUpperCase()) {
+                    btn.className = 'text-xs py-1 rounded bg-lumina-primary text-white font-semibold';
+                } else {
+                    btn.className = 'text-xs py-1 rounded text-gray-300 hover:bg-white/10';
+                }
+            });
+        }
+
+        function updateSelectedTextProp(prop, value) {
+            if (!state.selectedLayerId || state.selectedLayerId === 'svg') return;
+            const layer = state.currentHud.textLayers.find(l => l.id === state.selectedLayerId);
+            if (!layer) return;
+
+            layer[prop] = value;
+            renderHudViewport();
+            renderLayersList();
+        }
+
+        function insertPlaceholder(ph) {
+            const input = document.getElementById('propTextContent');
+            input.value += ph;
+            updateSelectedTextProp('text', input.value);
+        }
+
+        function applyGradientToSelected() {
+            const c1 = document.getElementById('gradColor1').value;
+            const c2 = document.getElementById('gradColor2').value;
+            const input = document.getElementById('propTextContent');
+            const current = input.value || 'Text';
+            input.value = `<gradient:${c1}:${c2}>${current}</gradient>`;
+            updateSelectedTextProp('text', input.value);
+            showToast('ใส่เอฟเฟกต์ Gradient เรียบร้อย', 'success');
+        }
+
+        function duplicateSelectedText() {
+            if (!state.selectedLayerId || state.selectedLayerId === 'svg') return;
+            const layer = state.currentHud.textLayers.find(l => l.id === state.selectedLayerId);
+            if (!layer) return;
+
+            const copy = JSON.parse(JSON.stringify(layer));
+            copy.id = `${layer.id}_copy`;
+            copy.x += 10;
+            copy.y += 10;
+
+            state.currentHud.textLayers.push(copy);
+            selectLayer(copy.id);
+            renderHudViewport();
+            renderLayersList();
+            showToast('คัดลอกเลเยอร์เรียบร้อย', 'info');
+        }
+
+        function deleteSelectedText() {
+            if (!state.selectedLayerId || state.selectedLayerId === 'svg') return;
+            state.currentHud.textLayers = state.currentHud.textLayers.filter(l => l.id !== state.selectedLayerId);
+            state.selectedLayerId = null;
+            updateInspector();
+            renderHudViewport();
+            renderLayersList();
+            showToast('ลบเลเยอร์แล้ว', 'info');
+        }
+
+        // 5. Renderers (Viewport & Layers List)
+        function renderHudViewport() {
+            // Render SVG Graphic
+            const svgContainer = document.getElementById('svgContainer');
+            if (state.currentHud.rawSvg.trim()) {
+                svgContainer.innerHTML = state.currentHud.rawSvg;
+                const svgElem = svgContainer.querySelector('svg');
+                if (svgElem) {
+                    svgElem.style.display = 'block';
+                    svgElem.style.transform = `scale(${state.currentHud.svgScale}) translate(${state.currentHud.offsetX}px, ${state.currentHud.offsetY}px)`;
+                    svgElem.style.transformOrigin = 'center center';
+                }
+                svgContainer.classList.toggle('layer-selected', state.selectedLayerId === 'svg');
+            } else {
+                svgContainer.innerHTML = '<div class="w-48 h-8 rounded border border-dashed border-white/20 flex items-center justify-center text-[10px] text-white/40">ไม่มีกราฟิก SVG (วางโค้ดด้านซ้าย)</div>';
+            }
+
+            // Render Text Layers
+            const textOverlay = document.getElementById('textLayersOverlay');
+            textOverlay.innerHTML = '';
+
+            state.currentHud.textLayers.forEach(tl => {
+                const textDiv = document.createElement('div');
+                textDiv.id = `rendered_${tl.id}`;
+                textDiv.className = `absolute cursor-move pointer-events-auto transition-transform ${tl.shadow ? 'mc-shadow' : ''} ${state.selectedLayerId === tl.id ? 'layer-selected' : ''}`;
+                
+                // Coordinates
+                textDiv.style.left = `${tl.x}px`;
+                textDiv.style.top = `${tl.y}px`;
+                textDiv.style.fontSize = `${14 * tl.scale}px`;
+                textDiv.style.fontFamily = 'Minecraftia, "JetBrains Mono", monospace';
+                textDiv.style.color = tl.color;
+                textDiv.style.whiteSpace = 'nowrap';
+
+                // Alignment
+                if (tl.align === 'CENTER') {
+                    textDiv.style.transform = 'translateX(-50%)';
+                } else if (tl.align === 'RIGHT') {
+                    textDiv.style.transform = 'translateX(-100%)';
+                } else {
+                    textDiv.style.transform = 'none';
+                }
+
+                // Process Placeholder Simulator
+                textDiv.innerHTML = processPlaceholders(tl.text);
+
+                // Click to select & drag
+                textDiv.onmousedown = (e) => {
+                    e.stopPropagation();
+                    selectLayer(tl.id);
+                    startDragElement(e, tl.id);
+                };
+
+                textOverlay.appendChild(textDiv);
+            });
+        }
+
+        function processPlaceholders(raw) {
+            let res = raw;
+            const simName = document.getElementById('simPlayerName').value || 'Steve';
+            const simHealth = document.getElementById('simPlayerHealth').value || '20';
+            const simEco = document.getElementById('simEcoBalance').value || '1,000';
+
+            res = res.replace(/%player_name%/g, simName);
+            res = res.replace(/%player_health%/g, simHealth);
+            res = res.replace(/%vault_eco_balance%/g, simEco);
+            res = res.replace(/%player_ping%/g, '35ms');
+
+            // Parse MiniMessage Tags for Preview
+            res = res.replace(/<gradient:#([0-9a-fA-F]{6}):#([0-9a-fA-F]{6})>(.*?)<\/gradient>/g, (m, c1, c2, text) => {
+                return `<span style="background: linear-gradient(90deg, #${c1}, #${c2}); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${text}</span>`;
+            });
+            res = res.replace(/<red>(.*?)<\/red>/g, '<span style="color: #FF5555;">$1</span>');
+            res = res.replace(/<green>(.*?)<\/green>/g, '<span style="color: #55FF55;">$1</span>');
+            res = res.replace(/<yellow>(.*?)<\/yellow>/g, '<span style="color: #FFFF55;">$1</span>');
+            res = res.replace(/<aqua>(.*?)<\/aqua>/g, '<span style="color: #55FFFF;">$1</span>');
+            res = res.replace(/<white>(.*?)<\/white>/g, '<span style="color: #FFFFFF;">$1</span>');
+
+            return res;
+        }
+
+        function renderLayersList() {
+            const container = document.getElementById('layersListContainer');
+            container.innerHTML = '';
+
+            // 1. Base SVG Layer Item
+            const svgItem = document.createElement('div');
+            const hasSvg = Boolean(state.currentHud.rawSvg.trim());
+            svgItem.className = `p-2 rounded-lg border text-xs flex items-center justify-between cursor-pointer transition ${state.selectedLayerId === 'svg' ? 'bg-lumina-primary/20 border-lumina-primary text-white' : 'bg-white/[0.02] border-white/5 text-gray-300 hover:bg-white/5'}`;
+            svgItem.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full ${hasSvg ? 'bg-lumina-accent' : 'bg-gray-600'}"></span>
+                    <span class="font-medium">SVG Base Graphic</span>
+                </div>
+                <span class="text-[10px] text-lumina-muted">${hasSvg ? 'Loaded' : 'Empty'}</span>
+            `;
+            svgItem.onclick = () => selectLayer('svg');
+            container.appendChild(svgItem);
+
+            // 2. Text Layer Items
+            state.currentHud.textLayers.forEach((tl, idx) => {
+                const item = document.createElement('div');
+                const isSelected = state.selectedLayerId === tl.id;
+                item.className = `p-2 rounded-lg border text-xs flex items-center justify-between cursor-pointer transition ${isSelected ? 'bg-lumina-primary/20 border-lumina-primary text-white' : 'bg-white/[0.02] border-white/5 text-gray-300 hover:bg-white/5'}`;
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2 overflow-hidden pr-2">
+                        <span class="text-lumina-primary font-mono text-[10px]">T</span>
+                        <span class="truncate font-mono">${tl.id}</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5 flex-shrink-0">
+                        <span class="text-[10px] font-mono text-lumina-muted">${tl.x}, ${tl.y}</span>
+                    </div>
+                `;
+                item.onclick = () => selectLayer(tl.id);
+                container.appendChild(item);
+            });
+        }
+
+        // 6. Drag & Drop Handling on Viewport
+        function setupDragListeners() {
+            window.addEventListener('mousemove', (e) => {
+                if (!state.isDragging || !state.dragTarget) return;
+
+                const dx = e.clientX - state.dragStartX;
+                const dy = e.clientY - state.dragStartY;
+
+                if (state.dragTarget === 'svg') {
+                    state.currentHud.offsetX = state.initialElemX + Math.round(dx);
+                    state.currentHud.offsetY = state.initialElemY + Math.round(dy);
+                    document.getElementById('svgOffsetX').value = state.currentHud.offsetX;
+                    document.getElementById('svgOffsetY').value = state.currentHud.offsetY;
+                    renderHudViewport();
+                } else {
+                    const layer = state.currentHud.textLayers.find(l => l.id === state.dragTarget);
+                    if (layer) {
+                        layer.x = state.initialElemX + Math.round(dx);
+                        layer.y = state.initialElemY + Math.round(dy);
+                        document.getElementById('propTextX').value = layer.x;
+                        document.getElementById('propTextY').value = layer.y;
+                        renderHudViewport();
+                    }
+                }
+
+                // Update cursor coords readout
+                document.getElementById('cursorCoords').innerText = `X: ${dx}, Y: ${dy}`;
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (state.isDragging) {
+                    state.isDragging = false;
+                    state.dragTarget = null;
+                    renderLayersList();
+                }
+            });
+        }
+
+        function startDragElement(e, targetId) {
+            state.isDragging = true;
+            state.dragTarget = targetId;
+            state.dragStartX = e.clientX;
+            state.dragStartY = e.clientY;
+
+            if (targetId === 'svg') {
+                state.initialElemX = state.currentHud.offsetX;
+                state.initialElemY = state.currentHud.offsetY;
+            } else {
+                const layer = state.currentHud.textLayers.find(l => l.id === targetId);
+                if (layer) {
+                    state.initialElemX = layer.x;
+                    state.initialElemY = layer.y;
+                }
+            }
+        }
+
+        // 7. Viewport Helpers (Grid / Hotbar)
+        function toggleGrid(show) {
+            document.getElementById('safeZoneOverlay').style.display = show ? 'block' : 'none';
+        }
+
+        function toggleHotbar(show) {
+            document.getElementById('hotbarSimulation').style.display = show ? 'flex' : 'none';
+        }
+
+        function resetZoom() {
+            const screen = document.getElementById('minecraftScreen');
+            screen.style.transform = 'none';
+        }
+
+        // 8. Live Sync: Save & Build HUD
+        async function saveAndBuildHud() {
+            const hudId = document.getElementById('hudIdInput').value.trim();
+            if (!hudId) {
+                showToast('กรุณาระบุ HUD ID ก่อนบันทึก', 'error');
+                return;
+            }
+
+            state.currentHud.id = hudId;
+            state.currentHud.name = document.getElementById('hudNameInput').value;
+            state.currentHud.displayType = document.getElementById('hudDisplayType').value;
+            state.currentHud.priority = parseInt(document.getElementById('hudPriority').value) || 10;
+            state.currentHud.anchor = document.getElementById('hudAnchor').value;
+
+            const saveBtn = document.getElementById('saveBuildBtn');
+            const spinner = document.getElementById('saveSpinner');
+            const icon = document.getElementById('saveIcon');
+
+            saveBtn.disabled = true;
+            spinner.classList.remove('hidden');
+            icon.classList.add('hidden');
+
+            try {
+                const payload = {
+                    id: state.currentHud.id,
+                    name: state.currentHud.name,
+                    enabled: state.currentHud.enabled,
+                    displayType: state.currentHud.displayType,
+                    priority: state.currentHud.priority,
+                    anchor: state.currentHud.anchor,
+                    rawSvg: state.currentHud.rawSvg,
+                    svgScale: state.currentHud.svgScale,
+                    offsetX: state.currentHud.offsetX,
+                    offsetY: state.currentHud.offsetY,
+                    ascent: state.currentHud.ascent,
+                    height: state.currentHud.height,
+                    textLayers: state.currentHud.textLayers
+                };
+
+                const res = await fetch('/api/hud/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+                if (res.ok && result.success) {
+                    showToast(`✨ ${result.message} (${result.durationMs}ms)`, 'success');
+                    loadExistingHuds();
+                } else {
+                    showToast(`บันทึกล้มเหลว: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (err) {
+                showToast(`เกิดข้อผิดพลาดในการเชื่อมต่อ: ${err.message}`, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                spinner.classList.add('hidden');
+                icon.classList.remove('hidden');
+            }
+        }
+
+        // 9. YAML Export Modal
+        function openYamlModal() {
+            const hudId = document.getElementById('hudIdInput').value || 'default_hud';
+            const hudName = document.getElementById('hudNameInput').value || 'Custom HUD';
+            const displayType = document.getElementById('hudDisplayType').value;
+            const priority = document.getElementById('hudPriority').value;
+            const anchor = document.getElementById('hudAnchor').value;
+
+            let yaml = `# LuminaHUD Generated Configuration\n`;
+            yaml += `id: "${hudId}"\n`;
+            yaml += `name: "${hudName}"\n`;
+            yaml += `enabled: true\n`;
+            yaml += `display-type: "${displayType}"\n`;
+            yaml += `priority: ${priority}\n`;
+            yaml += `anchor: "${anchor}"\n`;
+            yaml += `enabled-worlds: []\n\n`;
+
+            yaml += `layers:\n`;
+            if (state.currentHud.rawSvg) {
+                yaml += `  - id: "${hudId}_base"\n`;
+                yaml += `    type: "SVG"\n`;
+                yaml += `    ascent: 8\n`;
+                yaml += `    height: 16\n`;
+                yaml += `    x-offset: ${state.currentHud.offsetX}\n`;
+                yaml += `    y-offset: ${state.currentHud.offsetY}\n`;
+                yaml += `    scale: ${state.currentHud.svgScale}\n`;
+                yaml += `    svg-content: |\n`;
+                state.currentHud.rawSvg.split('\n').forEach(line => {
+                    yaml += `      ${line}\n`;
+                });
+            }
+
+            yaml += `\ntext-layers:\n`;
+            state.currentHud.textLayers.forEach(tl => {
+                yaml += `  - id: "${tl.id}"\n`;
+                yaml += `    text: "${tl.text.replace(/"/g, '\\"')}"\n`;
+                yaml += `    x: ${tl.x}\n`;
+                yaml += `    y: ${tl.y}\n`;
+                yaml += `    align: "${tl.align}"\n`;
+                yaml += `    scale: ${tl.scale}\n`;
+                yaml += `    color: "${tl.color}"\n`;
+                yaml += `    shadow: ${tl.shadow}\n`;
+                if (tl.condition) {
+                    yaml += `    condition: "${tl.condition}"\n`;
+                }
+            });
+
+            document.getElementById('yamlOutput').value = yaml;
+            document.getElementById('yamlModal').classList.remove('hidden');
+        }
+
+        function closeYamlModal() {
+            document.getElementById('yamlModal').classList.add('hidden');
+        }
+
+        function copyYamlToClipboard() {
+            const textarea = document.getElementById('yamlOutput');
+            textarea.select();
+            navigator.clipboard.writeText(textarea.value);
+            showToast('คัดลอกโค้ด YAML เรียบร้อยแล้ว!', 'success');
+        }
+
+        // 10. Toast Notification Helper
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-lumina-card border-lumina-border text-white';
+            if (type === 'success') bgClass = 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200';
+            if (type === 'error') bgClass = 'bg-rose-950/90 border-rose-500/40 text-rose-200';
+
+            toast.className = `${bgClass} backdrop-blur-xl border px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-medium transform transition-all duration-300 translate-y-4 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
+

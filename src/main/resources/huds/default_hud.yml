@@ -1,0 +1,94 @@
+# ============================================================================== #
+#                       LuminaHUD - Default HUD Template                         #
+# ============================================================================== #
+
+# ชื่อระบุประจำชุด HUD นี้
+id: "default_hud"
+name: "Default RPG Style HUD"
+enabled: true
+
+# ตำแหน่งการแสดงผลหลัก: ACTIONBAR, BOSSBAR, หรือ TITLE
+display-type: "ACTIONBAR"
+
+# ตำแหน่งจุดยึดหน้าจอ (Anchor Position):
+# BOTTOM_CENTER, BOTTOM_LEFT, BOTTOM_RIGHT, TOP_CENTER, TOP_LEFT, TOP_RIGHT
+anchor: "BOTTOM_CENTER"
+
+# เงื่อนไขการแสดงผล (Priority: ค่ายิ่งมากจะถูกนำมาแสดงก่อนเมื่อตรงเงื่อนไข)
+priority: 10
+
+# กำหนดโลกที่อนุญาตให้ HUD นี้แสดงผล (ปล่อยว่าง [] = แสดงทุกโลก)
+enabled-worlds: []
+
+# รายการเลเยอร์ส่วนประกอบกราฟิกของ HUD (เรียงจากหลังไปหน้า)
+layers:
+  # ----------------------------------------------------------------------------
+  # เลเยอร์ที่ 1: กรอบพื้นหลัง HUD (Background Frame)
+  # ----------------------------------------------------------------------------
+  - id: "hud_background"
+    type: "SVG"
+    # ไฟล์ SVG อยู่ใน huds/assets/ หรือสามารถระบุ SVG Content แบบ Inline ได้
+    file: "textures/hud/hud_background.svg"
+    ascent: 8
+    height: 16
+    x-offset: 0
+    y-offset: 0
+    # SVG ตัวอย่างสำหรับสร้างกรอบพื้นหลังสีเข้มโปร่งแสง
+    svg-content: |
+      <svg width="180" height="24" viewBox="0 0 180 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="180" height="24" rx="4" fill="#141414" fill-opacity="0.75" stroke="#383838" stroke-width="1"/>
+      </svg>
+
+  # ----------------------------------------------------------------------------
+  # เลเยอร์ที่ 2: หลอดเลือดผู้เล่น (Health Bar Dynamic Layer)
+  # ----------------------------------------------------------------------------
+  - id: "health_bar_fill"
+    type: "SVG"
+    file: "textures/hud/health_bar_fill.svg"
+    ascent: 8
+    height: 10
+    x-offset: 4
+    y-offset: 4
+    # รองรับ Placeholder ในการคำนวณหรือแสดงสถานะ
+    condition: "%player_health% > 0"
+    svg-content: |
+      <svg width="80" height="12" viewBox="0 0 80 12" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="80" height="12" rx="2" fill="#E74C3C"/>
+      </svg>
+
+  # ----------------------------------------------------------------------------
+  # เลเยอร์ที่ 3: ไอคอนหัวใจ (Heart Icon)
+  # ----------------------------------------------------------------------------
+  - id: "health_icon"
+    type: "SVG"
+    file: "textures/hud/health_icon.svg"
+    ascent: 8
+    height: 12
+    x-offset: -12
+    y-offset: 0
+    svg-content: |
+      <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 14s-6-3.8-6-8a4 4 0 0 1 7-2.6A4 4 0 0 1 14 6c0 4.2-6 8-6 8z" fill="#FF4757"/>
+      </svg>
+
+# รายการเลเยอร์ข้อความ Dynamic Text & Placeholder บน HUD
+text-layers:
+  - id: "player_name_label"
+    text: "<gradient:#C351F5:#58A6FF>%player_name%</gradient>"
+    x: 95
+    y: 4
+    align: "LEFT"
+    scale: 0.9
+    color: "#58A6FF"
+    shadow: true
+    condition: ""
+
+  - id: "hp_val_label"
+    text: "<red>❤</red> %player_health%/20"
+    x: 10
+    y: 4
+    align: "LEFT"
+    scale: 0.85
+    color: "#FFFFFF"
+    shadow: true
+    condition: "%player_health% > 0"

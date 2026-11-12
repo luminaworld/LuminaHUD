@@ -1,0 +1,137 @@
+# ============================================================================== #
+#                                                                                #
+#                         LuminaHUD Configuration File                           #
+#                 ระบบควบคุม HUD แบบ SVG to Bitmap Font เวกเตอร์                 #
+#                     รองรับ Paper / Purpur / Folia (26.3)                       #
+#                                                                                #
+# ============================================================================== #
+
+# ------------------------------------------------------------------------------
+# 1. การตั้งค่าระบบทั่วไป (General Settings)
+# ------------------------------------------------------------------------------
+general:
+  # เปิดใช้งานโหมด Debug เพื่อแสดงรายละเอียดการประมวลผลใน Console
+  debug: false
+  
+  # ภาษาของระบบข้อความในเกม (th: ภาษาไทย, en: ภาษาอังกฤษ)
+  locale: "th"
+
+# ------------------------------------------------------------------------------
+# 2. การตั้งค่าระบบ Web Editor (Embedded Local Web Server)
+# ------------------------------------------------------------------------------
+web-editor:
+  # เปิด/ปิดการทำงานของ Web Server สำหรับแก้ไข HUD แบบเรียลไทม์ผ่านเบราว์เซอร์
+  enabled: true
+  
+  # พอร์ตสำหรับเข้าใช้งาน Web Editor (เช่น http://localhost:8085)
+  port: 8085
+  
+  # โฮสต์หรือไอพีที่ให้ Web Server รับการเชื่อมต่อ (0.0.0.0 = ทุกไอพี, 127.0.0.1 = เฉพาะเครื่องนี้)
+  host: "0.0.0.0"
+  
+  # รหัส Token ป้องกันความปลอดภัยสำหรับเข้าสู่หน้าเว็บ (ต้องแนบ Authorization Token)
+  secret-token: "lumina-hud-secure-token-change-me"
+  
+  # รายการโดเมนที่อนุญาตให้เรียกใช้งาน API (CORS Allowed Origins)
+  cors-allowed-origins:
+    - "*"
+
+# ------------------------------------------------------------------------------
+# 3. การตั้งค่าระบบสร้าง Resource Pack และแปลง SVG (Pack & Font Generator)
+# ------------------------------------------------------------------------------
+resource-pack:
+  # สั่งให้ประมวลผลแปลงไฟล์ SVG และสร้าง Resource Pack อัตโนมัติเมื่อเซิร์ฟเวอร์เปิด
+  auto-generate-on-startup: true
+  
+  # บีบอัดโฟลเดอร์ generated_pack ให้เป็นไฟล์ .zip อัตโนมัติหลังประมวลผลเสร็จ
+  auto-zip: true
+  
+  # ชื่อไฟล์ ZIP ปลายทางที่จะสร้างในไดเรกทอรีของปลั๊กอิน
+  output-zip-name: "LuminaHUD-Pack.zip"
+  
+  # ข้อความคำอธิบายแพ็กใน pack.mcmeta
+  description: "§bLuminaHUD §7- Clean Room Vector HUD Resource Pack"
+  
+  # เวอร์ชัน pack_format สำหรับ Minecraft 26.3 (ค่าเริ่มต้น: 48)
+  pack-format: 48
+  
+  # การตั้งค่าการแปลง SVG เป็นภาพ Bitmap PNG
+  svg-rasterizer:
+    # ขนาดพิกเซลสูงสุดต่อชิ้น (Minecraft Font แนะนำไม่เกิน 256x256)
+    # หากภาพมีขนาดเกิน ค่านี้จะถูกตัดแบ่งเป็น Grid Tiles อัตโนมัติ
+    max-tile-size: 256
+    
+    # อัตราส่วนความละเอียด (Scale factor) สำหรับเรนเดอร์เวกเตอร์ให้คมชัด
+    anti-aliasing: true
+
+  # การตั้งค่า Unicode Private Use Area (PUA) สำหรับแมปภาพ HUD
+  font-mapping:
+    namespace: "luminahud"
+    pua-start-hex: "E000"
+
+  # การตั้งค่า Negative Space Font (-1 ถึง -1024 px) สำหรับจัดเลเยอร์ HUD ซ้อนทับ
+  negative-space:
+    enabled: true
+    min-offset: -1
+    max-offset: -1024
+
+  # ----------------------------------------------------------------------------
+  # 3.1 ระบบส่ง Resource Pack เข้าหาผู้เล่นในเกม (Pack Delivery Modes)
+  # ----------------------------------------------------------------------------
+  delivery:
+    # โหมดการส่ง Resource Pack มีให้เลือก 4 โหมด:
+    # - R2_S3              : อัปโหลดขึ้น Cloudflare R2 อัตโนมัติ (แนะนำสุดสำหรับ Web Panel ถาวร 100% ฟรี 0 Port)
+    # - MC_PACKS           : อัปโหลดขึ้น mc-packs.net ฟรีอัตโนมัติ (สะดวก ไม่ต้องมี Account R2, 0 Port)
+    # - LOCAL_HOST         : ส่งผ่าน Local Web Server ในเครื่อง (พอร์ต 8085 ต้องเปิดพอร์ตออกเน็ตได้)
+    # - EXTERNAL_OR_MERGE  : ใส่ลิงก์ตรงจากเว็บภายนอก หรือผสานเข้า ItemsAdder/Nexo
+    mode: "R2_S3"
+
+    # ส่ง Resource Pack ให้ผู้เล่นอัตโนมัติเมื่อเข้าเซิร์ฟเวอร์ (PlayerJoinEvent)
+    send-on-join: true
+
+    # หน่วงเวลาก่อนส่ง Pack ให้ผู้เล่นเมื่อเข้าเกม (หน่วย: Ticks, 20 ticks = 1 วินาที)
+    delay-ticks: 20
+
+    # บังคับให้ผู้เล่นต้องกดยอมรับดาวน์โหลด Resource Pack หรือไม่ (true = บังคับ, false = ไม่บังคับ)
+    required: false
+
+    # ข้อความแสดงบนหน้าจอเมื่อตัวเกมถามให้ผู้เล่นดาวน์โหลด Resource Pack
+    prompt-message: "<gradient:#58a6ff:#7ee787>กำลังดาวน์โหลด LuminaHUD Resource Pack...</gradient>"
+
+    # อัปเดตแพ็กส่งให้ผู้เล่นทุกคนที่ออนไลน์อยู่ทันที เมื่อรันคำสั่ง /luminahud pack เสร็จ (ค่าเริ่มต้น: false ไม่ส่งอัตโนมัติ)
+    auto-broadcast-on-pack: false
+
+    # กรณีเลือกโหมด EXTERNAL_OR_MERGE: ใส่ URL ลิงก์ตรงที่ดาวน์โหลดไฟล์ zip ได้ที่นี่
+    external-url: ""
+
+    # --------------------------------------------------------------------------
+    # การตั้งค่าเฉพาะสำหรับโหมด R2_S3 (Cloudflare R2 / S3-Compatible Storage)
+    # --------------------------------------------------------------------------
+    r2-s3:
+      # S3 Endpoint URL จากหน้า R2 API Tokens ของ Cloudflare
+      endpoint: "https://a9eccff36d623b24fcc9d0ec7a2ffc87.r2.cloudflarestorage.com"
+      
+      # ชื่อ Bucket ที่สร้างไว้ใน Cloudflare R2
+      bucket-name: "luminaris-hud"
+      
+      # S3 Access Key ID
+      access-key-id: "b046c72af65dec83a1b80bcdfb026dfb"
+      
+      # S3 Secret Access Key
+      secret-access-key: "31ec5d15a2be03e33449d42f02cd5d81c3e966be213d92976f9b199720561c94"
+      
+      # ลิงก์สาธารณะสำหรับดาวน์โหลดไฟล์ (R2.dev Subdomain หรือ Custom Domain ของคุณ)
+      # ตัวอย่าง: "https://pub-xxxxxxxx.r2.dev" หรือ "https://pack.mydomain.com"
+      # หากปล่อยว่างไว้ ระบบจะใช้ Endpoint เริ่มต้น
+      public-base-url: "https://pub-512be4ba0df243a28e46a7086b2eadb4.r2.dev"
+
+# ------------------------------------------------------------------------------
+# 4. การผสาน Resource Pack เข้ากับปลั๊กอินภายนอก (Auto-Merge Integration)
+# ------------------------------------------------------------------------------
+auto-merge:
+  # เปิดใช้งานระบบส่งออกและผสานไฟล์ Resource Pack ไปยังโฟลเดอร์ของปลั๊กอินอื่น
+  enabled: false
+  
+  # ประเภทปลั๊กอินเป้าหมาย: NEXO, ITEMSADDER, ORAXEN, หรือ CUSTOM
+  target-plugin: "NEXO"
+  custom-target-path: ""
